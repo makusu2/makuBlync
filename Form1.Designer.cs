@@ -1,4 +1,4 @@
-﻿namespace BlyncLightTest
+﻿/*namespace BlyncLightTest
 {
     partial class Form1
     {
@@ -563,3 +563,4 @@
     }
 }
 
+*/

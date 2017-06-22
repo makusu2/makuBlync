@@ -13,10 +13,10 @@ namespace BlyncLightTest
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            //Application.EnableVisualStyles();
+            //Application.SetCompatibleTextRenderingDefault(false);
             Form1 form = new Form1();
-            Application.Run(form);
+            //Application.Run(form);
             while (true)
             {
                 form.BlankTicket = !form.BlankTicket;

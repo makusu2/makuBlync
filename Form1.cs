@@ -12,10 +12,73 @@ using System.Diagnostics;
 
 namespace BlyncLightTest
 {
+    public partial class Form1
+    {
+        private BlynclightController makuController = new BlynclightController();
+        public Form1()
+        {
+            //SearchAndListBlyncDevices();
+            makuController.InitBlyncDevices();
+            this.InfLoop();
+        }
+    
+    public void InfLoop()
+    {
+        Random rnd = new Random();
+        int[] steps = { 0, 0, 0 };
+        byte[] vals = { 120, 120, 120 };
+        while (true)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                steps[i] = steps[i] + 1;
+                vals[i] = (byte)(255 * Math.Pow((Math.Abs(Math.Sin(i + steps[i] * (i + 1) * Math.PI / 1800))), 2));
+                //vals[i] = (byte)((vals[i]+(byte)(rnd.Next(5)-2))%256);
+            }
+            makuController.TurnOnRGBLights(0, vals[0], vals[1], vals[2]);
+        }
+
+    }
+    private bool blankTicket = false;
+    public bool BlankTicket
+        {
+            get
+            {
+                return this.blankTicket;
+            }
+            set
+            {
+                this.blankTicket = value;
+                if (value)
+                {
+                    this.GoRed();
+                }
+                else
+                {
+                    this.GoGreen();
+                }
+            }
+        }
+    public void GoRed()
+    {
+        bool bResult = false;
+        bResult = makuController.TurnOnRedLight(0);
+    }
+    public void GoGreen()
+    {
+        makuController.TurnOnGreenLight(0);
+    }
+    }
+}
+/*namespace BlyncLightTest
+{
     public partial class Form1 : Form
     {
+        private BlynclightController makuController = new BlynclightController();
+
+
         // Create object for the base class BlynclightController
-        private BlynclightController oBlynclightController = new BlynclightController();
+        private BlynclightController makuController = new BlynclightController();
 
         private int nNumberOfBlyncDevices = 0;
         private int nSelectedDeviceIndex = 0;
@@ -44,10 +107,9 @@ namespace BlyncLightTest
                                                                 "Music 6", "Music 7", "Music 8", "Music 9", "Music 10", 
                                                                 "Music 11", "Music 12", "Music 13", "Music 14"
                                                             };
-
+                                                            
         public Form1()
         {
-            Debug.Print("YO");
             InitializeComponent();
 
             // Form_Closing event while exiting the application
@@ -66,7 +128,7 @@ namespace BlyncLightTest
             //comboBoxMusicList.SelectedIndex = 0;
             comboBoxFlashSpeedList.SelectedIndex = 0;
             Debug.Print("Hey");
-            oBlynclightController.SetLightDim(nSelectedDeviceIndex);
+            makuController.SetLightDim(nSelectedDeviceIndex);
             this.InfLoop();
             //Thread oThread = new Thread(new ThreadStart(this.InfLoop));
         }
@@ -83,14 +145,9 @@ namespace BlyncLightTest
                     vals[i] = (byte)(255 * Math.Pow((Math.Abs(Math.Sin(i+steps[i] * (i + 1) * Math.PI / 1800))), 2));
                     //vals[i] = (byte)((vals[i]+(byte)(rnd.Next(5)-2))%256);
                 }
-                oBlynclightController.TurnOnRGBLights(nSelectedDeviceIndex, vals[0], vals[1], vals[2]);
+                makuController.TurnOnRGBLights(nSelectedDeviceIndex, vals[0], vals[1], vals[2]);
             }
-
-            /*while (true)
-            {
-                Debug.Print(""+this.BlankTicket);
-                this.BlankTicket = !this.BlankTicket;
-            }*/
+            
         }
         private bool blankTicket = false;
         public bool BlankTicket
@@ -116,11 +173,11 @@ namespace BlyncLightTest
         public void GoRed()
         {
             bool bResult = false;
-            bResult = oBlynclightController.TurnOnRedLight(nSelectedDeviceIndex);
+            bResult = makuController.TurnOnRedLight(nSelectedDeviceIndex);
         }
         public void GoGreen()
         {
-            oBlynclightController.TurnOnGreenLight(nSelectedDeviceIndex);
+            makuController.TurnOnGreenLight(nSelectedDeviceIndex);
         }
         
         private void SearchAndListBlyncDevices()
@@ -131,27 +188,27 @@ namespace BlyncLightTest
             // Look for the Blync devices connected to the System
             // the nNumberOfBlyncDevices will be equal to the number 
             // of Blync devices connected to the System USB Ports
-            nNumberOfBlyncDevices = oBlynclightController.InitBlyncDevices();
+            nNumberOfBlyncDevices = makuController.InitBlyncDevices();
 
             if (nNumberOfBlyncDevices > 0)
             {
                 // Add the Blync devices detected to the combobox
                 for (int i = 0; i < nNumberOfBlyncDevices; i++)
                 {
-                    comboBoxDeviceList.Items.Insert(i, oBlynclightController.aoDevInfo[i].szDeviceName);
+                    comboBoxDeviceList.Items.Insert(i, makuController.aoDevInfo[i].szDeviceName);
 
-                    if (oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_10 ||
-                        oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_20)
+                    if (makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_10 ||
+                        makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_20)
                     {
                         EnableUIComponentsForBlyncUsb1020Devices();
                         DisableUIComponentsForBlyncUsb30Devices();
                     }
-                    else if (oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
-                        oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30 ||
-                        oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA110 ||
-                        oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA120 ||
-                        oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S ||
-                        oBlynclightController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S)
+                    else if (makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
+                        makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30 ||
+                        makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA110 ||
+                        makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA120 ||
+                        makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S ||
+                        makuController.aoDevInfo[i].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S)
                     {
                         EnableUIComponentsForBlyncUsb30Devices();
                         DisableUIComponentsForBlyncUsb1020Devices();
@@ -184,16 +241,16 @@ namespace BlyncLightTest
 
         private void EnableUIComponentsForBlyncUsb30Devices()
         {
-            if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S)
+            if (makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
+                makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S ||
+                makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S)
             {
                 groupBoxLightControls.Enabled = true;
                 groupBoxMusicControls.Enabled = true;
             }
-            else if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30 ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA110 ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA120)
+            else if (makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30 ||
+                makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA110 ||
+                makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA120)
             {
                 groupBoxLightControls.Enabled = true;
                 groupBoxMusicControls.Enabled = false;
@@ -212,23 +269,23 @@ namespace BlyncLightTest
 
             if (nSelectedDeviceIndex >= 0)
             {
-                if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_10 ||
-                    oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_20)
+                if (makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_10 ||
+                    makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_TENX_20)
                 {
                     EnableUIComponentsForBlyncUsb1020Devices();
                     DisableUIComponentsForBlyncUsb30Devices();
                 }
-                else if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
-                    oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30 ||
-                    oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA110 ||
-                    oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA120 ||
-                    oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S ||
-                    oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S)
+                else if (makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
+                    makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30 ||
+                    makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA110 ||
+                    makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA120 ||
+                    makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S ||
+                    makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S)
                 {
                     EnableUIComponentsForBlyncUsb30Devices();
                     DisableUIComponentsForBlyncUsb1020Devices();
 
-                    if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S)
+                    if (makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S)
                     {
                         if (comboBoxMusicList.Items.Count > 0)
                         {
@@ -242,8 +299,8 @@ namespace BlyncLightTest
 
                         comboBoxMusicList.SelectedIndex = 0;
                     }
-                    else if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S ||
-                    oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S)
+                    else if (makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S ||
+                    makuController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S)
                     {
                         if (comboBoxMusicList.Items.Count > 0)
                         {
@@ -267,42 +324,42 @@ namespace BlyncLightTest
             // nSelectedDeviceIndex value will be updated on device selection in the Combo box
 
             bool bResult = false;
-            bResult = oBlynclightController.TurnOnRedLight(nSelectedDeviceIndex);
+            bResult = makuController.TurnOnRedLight(nSelectedDeviceIndex);
         }
 
         private void buttonBlue_Click(object sender, EventArgs e)
         {
-            oBlynclightController.TurnOnBlueLight(nSelectedDeviceIndex);
+            makuController.TurnOnBlueLight(nSelectedDeviceIndex);
         }
 
         private void buttonMagenta_Click(object sender, EventArgs e)
         {
-            oBlynclightController.TurnOnMagentaLight(nSelectedDeviceIndex);
+            makuController.TurnOnMagentaLight(nSelectedDeviceIndex);
         }
 
         private void buttonCyan_Click(object sender, EventArgs e)
         {
-            oBlynclightController.TurnOnCyanLight(nSelectedDeviceIndex);
+            makuController.TurnOnCyanLight(nSelectedDeviceIndex);
         }
 
         private void buttonGreen_Click(object sender, EventArgs e)
         {
-            oBlynclightController.TurnOnGreenLight(nSelectedDeviceIndex);
+            makuController.TurnOnGreenLight(nSelectedDeviceIndex);
         }
 
         private void buttonYellow_Click(object sender, EventArgs e)
         {
-            oBlynclightController.TurnOnYellowLight(nSelectedDeviceIndex);
+            makuController.TurnOnYellowLight(nSelectedDeviceIndex);
         }
 
         private void buttonWhite_Click(object sender, EventArgs e)
         {
-            oBlynclightController.TurnOnWhiteLight(nSelectedDeviceIndex);
+            makuController.TurnOnWhiteLight(nSelectedDeviceIndex);
         }
 
         private void buttonResetEffects_Click(object sender, EventArgs e)
         {
-            oBlynclightController.ResetLight(nSelectedDeviceIndex);
+            makuController.ResetLight(nSelectedDeviceIndex);
         }
 
         private void buttonUpdateDevList_Click(object sender, EventArgs e)
@@ -314,7 +371,7 @@ namespace BlyncLightTest
         {
             if (nNumberOfBlyncDevices > 0)
             {
-                oBlynclightController.CloseDevices(nNumberOfBlyncDevices);
+                makuController.CloseDevices(nNumberOfBlyncDevices);
             }
         }
 
@@ -331,7 +388,7 @@ namespace BlyncLightTest
             }
             else
             {
-                bResult = oBlynclightController.ResetLight(nSelectedDeviceIndex);
+                bResult = makuController.ResetLight(nSelectedDeviceIndex);
                 if (bResult == false)
                 {
                     MessageBox.Show("TurnOffLight failed", "Information",
@@ -347,7 +404,7 @@ namespace BlyncLightTest
 
             if (bPlayMusic == true)
             {
-                bResult = oBlynclightController.StartMusicPlay(nSelectedDeviceIndex);
+                bResult = makuController.StartMusicPlay(nSelectedDeviceIndex);
                 if (bResult == false)
                 {
                     MessageBox.Show("StartMusicPlay failed", "Information",
@@ -356,7 +413,7 @@ namespace BlyncLightTest
             }
             else
             {
-                bResult = oBlynclightController.StopMusicPlay(nSelectedDeviceIndex);
+                bResult = makuController.StopMusicPlay(nSelectedDeviceIndex);
                 if (bResult == false)
                 {
                     MessageBox.Show("StopMusicPlay failed", "Information",
@@ -364,14 +421,14 @@ namespace BlyncLightTest
                 }
             }
 
-            bResult = oBlynclightController.SelectMusicToPlay(nSelectedDeviceIndex, bySelectedMusic);
+            bResult = makuController.SelectMusicToPlay(nSelectedDeviceIndex, bySelectedMusic);
             if (bResult == false)
             {
                 MessageBox.Show("SelectMusicToPlay failed", "Information",
                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
             }
 
-            bResult = oBlynclightController.SetMusicVolume(nSelectedDeviceIndex, byVolumeLevel);
+            bResult = makuController.SetMusicVolume(nSelectedDeviceIndex, byVolumeLevel);
             if (bResult == false)
             {
                 MessageBox.Show("SetMusicVolume failed", "Information",
@@ -386,7 +443,7 @@ namespace BlyncLightTest
 
             if (bDimLight == true)
             {
-                bResult = oBlynclightController.SetLightDim(nSelectedDeviceIndex);
+                bResult = makuController.SetLightDim(nSelectedDeviceIndex);
                 if (bResult == false)
                 {
                     MessageBox.Show("SetLightDim failed", "Information",
@@ -395,73 +452,13 @@ namespace BlyncLightTest
             }
             else
             {
-                bResult = oBlynclightController.ClearLightDim(nSelectedDeviceIndex);
+                bResult = makuController.ClearLightDim(nSelectedDeviceIndex);
                 if (bResult == false)
                 {
                     MessageBox.Show("ClearLightDim failed", "Information",
                         MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
                 }
             }
-        }
-
-        private void checkBoxFlashLight_CheckedChanged(object sender, EventArgs e)
-        {
-            bool bFlashLight = checkBoxFlashLight.Checked;
-            bool bResult = false;
-
-            if (bFlashLight == true)
-            {
-                bResult = oBlynclightController.StartLightFlash(nSelectedDeviceIndex);
-                if (bResult == false)
-                {
-                    MessageBox.Show("StartLightFlash failed", "Information",
-                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                }
-            }
-            else
-            {
-                bResult = oBlynclightController.StopLightFlash(nSelectedDeviceIndex);
-                if (bResult == false)
-                {
-                    MessageBox.Show("StopLightFlash failed", "Information",
-                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                }
-            }
-
-            // Select light flash speed
-            bResult = oBlynclightController.SelectLightFlashSpeed(nSelectedDeviceIndex, bySelectedFlashSpeed);
-            if (bResult == false)
-            {
-                MessageBox.Show("SelectLightFlashSpeed failed", "Information",
-                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-            }
-        }
-
-        private void checkBoxRepeatMusic_CheckedChanged(object sender, EventArgs e)
-        {
-            bool bRepeatMusic = checkBoxRepeatMusic.Checked;
-            bool bResult = false;
-
-            if (bRepeatMusic == true)
-            {
-
-                bResult = oBlynclightController.SetMusicRepeat(nSelectedDeviceIndex);
-                if (bResult == false)
-                {
-                    MessageBox.Show("SetMusicRepeat failed", "Information",
-                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                }
-            }
-            else
-            {
-                bResult = oBlynclightController.ClearMusicRepeat(nSelectedDeviceIndex);
-                if (bResult == false)
-                {
-                    MessageBox.Show("ClearMusicRepeat failed", "Information",
-                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                }
-            }
-
         }
 
         private void buttonSetRgbValues_Click(object sender, EventArgs e)
@@ -513,7 +510,7 @@ namespace BlyncLightTest
                 return;
             }
 
-            bResult = oBlynclightController.TurnOnRGBLights(nSelectedDeviceIndex, byRedLevel, byGreenLevel, 
+            bResult = makuController.TurnOnRGBLights(nSelectedDeviceIndex, byRedLevel, byGreenLevel, 
                 byBlueLevel);
 
             if (!bResult)
@@ -522,84 +519,5 @@ namespace BlyncLightTest
                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
             }           
         }
-
-        private void comboBoxMusicList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            bySelectedMusic = (Byte)(comboBoxMusicList.SelectedIndex + 1);
-
-            if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S)
-            {
-                bool bResult = oBlynclightController.SelectMusicToPlay(nSelectedDeviceIndex, bySelectedMusic);
-                if (bResult == false)
-                {
-                    MessageBox.Show("SelectMusicToPlay failed", "Information",
-                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                }
-            }
-
-            /*if (comboBoxMusicList.Enabled == false)
-            {
-                return;
-            }
-
-            bool bResult = oBlynclightController.SelectMusicToPlay(nSelectedDeviceIndex, bySelectedMusic);
-            if (bResult == false)
-            {
-                MessageBox.Show("SelectMusicToPlay failed", "Information",
-                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-            }*/
-        }
-
-        private void comboBoxFlashSpeedList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            bySelectedFlashSpeed = (Byte)(comboBoxFlashSpeedList.SelectedIndex + 1);
-
-            if (oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30S ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_CHIPSET_V30 ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA110 ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_HEADSET_CHIPSET_V30_LUMENA120 || 
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_MINI_CHIPSET_V30S ||
-                oBlynclightController.aoDevInfo[nSelectedDeviceIndex].byDeviceType == DEVICETYPE_BLYNC_WIRELESS_CHIPSET_V30S)
-            {
-                // Select light flash speed
-                bool bResult = oBlynclightController.SelectLightFlashSpeed(nSelectedDeviceIndex, bySelectedFlashSpeed);
-                if (bResult == false)
-                {
-                    MessageBox.Show("SelectLightFlashSpeed failed", "Information",
-                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-                }
-            }
-        }
-
-        private void trackBar1_Scroll(object sender, EventArgs e)
-        {
-            byVolumeLevel = (Byte)trackBar1.Value;
-            bool bResult = false;
-
-            bResult = oBlynclightController.SetMusicVolume(nSelectedDeviceIndex, byVolumeLevel);
-            if (bResult == false)
-            {
-                MessageBox.Show("SetMusicVolume failed", "Information",
-                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-            }
-
-        }
-
-        private void vScrollBarRed_Scroll(object sender, ScrollEventArgs e)
-        {
-            textBoxRed.Text = vScrollBarRed.Value.ToString();
-        }
-
-        private void vScrollBarGreen_Scroll(object sender, ScrollEventArgs e)
-        {
-            textBoxGreen.Text = vScrollBarGreen.Value.ToString();
-        }
-
-        private void vScrollBarBlue_Scroll(object sender, ScrollEventArgs e)
-        {
-            textBoxBlue.Text = vScrollBarBlue.Value.ToString();
-        }
     }
-}
+}*/
