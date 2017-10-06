@@ -46,14 +46,8 @@ namespace BlyncLightTest
             set
             {
                 this.blankTicket = value;
-                if (value)
-                {
-                    makuController.TurnOnRedLight(0);
-                }
-                else
-                {
-                    makuController.TurnOnGreenLight(0);
-                }
+                if (value) {makuController.TurnOnRedLight(0);}
+                else{makuController.TurnOnGreenLight(0);}
             }
         }
     }
